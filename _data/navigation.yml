@@ -2,8 +2,8 @@ docs:
   - title: Developement
     children:
       - title: "Java"
-        url: /java
+        url: /categories/java/
       - title: "Web"
-        url: /web
+        url: /categories/web
       - title: "Spring"
-        url: /spring
+        url: /categories/spring
