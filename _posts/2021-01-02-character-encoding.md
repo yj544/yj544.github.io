@@ -6,8 +6,6 @@ tags:
   - web
 ---
 
-http://dev.epiloum.net/231
-
 #### 1. ASCII 코드
 ASCII(American Standard Code for Information Interchange)는 1967년 처음 개정된 대표적인 문자 인코딩이다.  
 아스키는 7비트 인코딩이며 33개의 출력 불가능한 제어 문자, 95개의 출력 가능한 문자(영문 대소문자, 숫자, 특수문자)를 포함하여 총 128개로 구성된다.  
