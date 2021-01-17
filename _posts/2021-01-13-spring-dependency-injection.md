@@ -20,7 +20,7 @@ Inversion of Control은 Dependency Injection이라고도 하며, 어떤 객체�
 Spring IoC Container는 말 그대로 Spring에서 IoC를 지원하는 컨테이너를 말한다.
 [BeanFactory](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/BeanFactory.html)는 Spring IoC Container의 최상위 계층에 있는 인터페이스이다.
 
-또한 일반적으로 많이 쓰는 컨테이너는 [ApplicationContext](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/ApplicationContext.html)이다. BeanFactory를 상속받아 BeanFactory의 기능을 제공하면서, 그 외 추가적인 기능을 제공한다. 
+[ApplicationContext](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/ApplicationContext.html)는 일반적으로 우리가 사용하게 되는 Ioc 컨테이너로 BeanFactory를 상속받아 BeanFactory의 기능을 제공하면서, 그 외 추가적인 기능을 제공한다. 
 
 ```java
 public interface ApplicationContext extends 
@@ -45,7 +45,7 @@ public interface ApplicationContext extends
 	AutowireCapableBeanFactory getAutowireCapableBeanFactory() throws IllegalStateException;
 }
 ```
-ApplicationContext는 XML(가장 전통적인 방식), 어노테이션(Spring 2.5 이후 지원) 또는 자바 코드(Spring 3.0 이후 지원)로 구성된 메타 데이터 설정을 읽어서 자신이 생성 및 구성해야 할 객체에 대한 정보를 얻는다.
+ApplicationContext는 미리 메타 데이터 설정을 읽어서 자신이 생성 및 구성해야 할 객체에 대한 정보를 얻는다.
 
 ApplicationContext에는 몇 가지 구현체가 있는데, 독립형 어플리케이션을 위한 ClassPathXmlApplicationContext, FileSystemXmlApplicationContext 와 웹 어플리케이션을 위한 WebApplicationContext 가 포함된다. 
 
@@ -84,12 +84,18 @@ public @interface SpringBootApplication {
 
 즉, Main 함수가 존재하는 클래스가 포함된 패키지부터 시작하여 하위 클래스들 중 @Controller 와 같은 어노테이션이 추가된 클래스를 찾아 빈으로 등록한다. 
 
-
-### Spring IoC Container 장점
-- 객체간 의존성을 알아서 잘 관리해준다.
-- Scope라는 개념이 있고 싱글톤-> 하나 (기본), 프로토타입 -> 매번 새로 생성. 기본적으로 Bean은 싱글톤으로 생성되기 때문에 런타임 성능 최적화에 유리하다. 
-- 라이프 사이클 인터페이스 제공 (@PostConstruct)
-
+### Bean Scope
+Spring은 Bean을 생성할 때 Scope를 정의하여 해당 Scope 내에서 Bean을 관리한다.  
+Bean Scope의 종류는 다음과 같으며 Bean 생성 시 별도의 설정이 없으면 singleton으로 구성된다.  
+즉, 기본적으로 한 번 생성된 객체는 재사용이 가능한 구조로 런타임 성능 최적화에 유리하다. 
+- singleton : Spring IoC Container에서 단일 객체로 관리하는 타입. 
+- prototype : 생성되는 객체의 수에 제한이 없는 타입.
+- request : Http Request 생명 주기 안에서 하나의 객체만 존재함. (ApplicationContext에서만 사용)
+- session : Http Session 생명 주기 안에서 하나의 객체만 존재함. (ApplicationContext에서만 사용)
+- global session : Global Http Session 생명 주기 안에서 하나의 객체만 존재함. (ApplicationContext에서만 사용)
+ 
+### Bean Life Cycle 
+https://docs.spring.io/spring-framework/docs/5.3.3/reference/html/core.html#beans-factory-lifecycle
 
 ### 의존성 주입
 @Autowired 어노테이션을 추가하여 주입받을 수 있다.
@@ -109,7 +115,7 @@ MemberController가 @Controller 어노테이션을 통해 Bean으로 등록되�
 사실 스프링 4.3부터는 위 예시의 생성자에 @Autowired를 붙이지 않아도 자동으로 의존성을 주입한다.
 클래스에 생성자가 하나만 존재하는데 파라미터로 전달받는 클래스가 빈으로 등록되어 있다면 의존성을 주입해주기 때문이다. 
 
-마찬가지로 멤버변수와 Setter에 추가하는 방법도 위와 동일하게 @Autowired를 붙여주면 된다.
+마찬가지로 멤버변수와 Setter에 추가하는 방법도 위와 동일하게 @Autowired를 붙여주면 된다. 
 ```java
 @Controller
 public class MemberController {
