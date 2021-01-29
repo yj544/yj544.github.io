@@ -10,8 +10,6 @@ toc_icon: "cog"
 toc_sticky: true
 ---
 
-
-
 ### Inversion of Control (제어의 역전)
 Inversion of Control은 Dependency Injection이라고도 하며, 의존 관계를 직접 만드는 게 아니라 프레임워크로부터 주입을 받아 사용하는 방법을 말한다. 
 프레임워크를 사용할 때 프레임워크가 제공하는 함수를 사용하는 것이 일반적이지만, 반대의 상황이 되면서 "제어가 역전되었다" 라고 표현하는 것이다.    

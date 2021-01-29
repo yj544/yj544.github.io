@@ -1,11 +1,11 @@
 ---
-title: ""
+title: "Java Garbage Collection"
 categories:
   - java
 tags:
   - java
-  - string
-  - string_pool
+  - jvm
+  - garbage_collection
   
 toc: true
 toc_icon: "cog"

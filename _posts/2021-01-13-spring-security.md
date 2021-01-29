@@ -1,18 +1,15 @@
 ---
-title: "Spring Security"
+title: "Spring Security Architecture"
 categories:
   - spring
 tags:
   - spring
+  - spring_security
   
 toc: true
 toc_icon: "cog"
 toc_sticky: true
 ---
-
-https://spring.io/guides/topicals/spring-security-architecture/
-
-Spring Security Architecture
 
 ### 인증과 접근 제어
 어플리케이션의 보안은 크게 인증(authentication)과 인가(authorization or access controll) 두 가지가 핵심이다.
