@@ -162,6 +162,3 @@ Class Loader는 자바 클래스 파일을 컴파일 시점이 아닌 런타임 
 웹의 경우 ServletContextClassLoader, ServletContainerClassLoader 최소 두 개의 클래스 로더가 추가로 존재한다.
 ServletContextClassLoader의 경우 웹 애플리케이션 자체 API를 제공하기 위해 컨테이너를 로드하는 역할을 하는 클래스 로더이다.
 ServletContainerClassLoader는 사용자가 추가한 JSP나 WAR 파일을 로드하기 위한 클래스 로더이며 WEB-INF/classes 파위 파일을 먼저 탐색하고 이후 WEB-INF/libs에 있는 jar 파일을 탐색한다. 
-
-https://www.baeldung.com/java-classloaders
-https://engkimbs.tistory.com/606

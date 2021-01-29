@@ -146,4 +146,27 @@ public class ApplicationWebSecurity extends WebSecurityConfigurerAdapter{
 }
 ```
 
-@Configuration 으로 빈이 된 ApplicationWebSecurity 클래스 내의 initialize 함수는 @Autowired 가 달려있다. 함수에 @Autowired가 달린 경우 파라미터도 @Autowired가 된다. 
+initialize 함수에 @Autowired가 붙어있는데 이 경우 builder는 Global AuthenticationManager가 된다. 만댝 @Override를 붙여서 사용했다면 builder는 Local AuthenticationManager로 들어올 것이다. 
+
+
+### SpringSecurityFilterChain
+Spring Security는 Servlet Filter 기반으로 동작하며 FilterChainProxy 타입이다.   
+또한 SpringBoot에서는 springSecurityFilterChain이라는 이름의 bean으로 Application Context에 등록되며 SecurityProperties.DEFAULT_FILTER_ORDER를 가진다. 
+앞단에 FilterChainProxy로 권한을 위임하는 DelegatingFilterProxy가 있기 때문에 실제로는 아래와 같이 구성된다. 
+![]()
+  
+하나의 요청에 하나만 매핑되는 Servlet과 달리 Servlet Filter는 여러 개가 수행되어야 할 수 있고, Filter의 처리 과정에서 요청 또는 응답의 내용이 변경될 수 있기 때문에 순서가 매우 중요하다.
+다음은 반드시 지켜져야 하는 FilterChain의 순서이다.
+
+- 1) ChannelProcessingFilter : 경우에 따라 다른 프로토콜로 리다이렉트해야 할 수 있음
+- 2) SecurityContextPersistenceFilter : SecurityContext가 요청이 들어왔을 때 SecurityContextHolder를 준비하고 요청이 처리되기 전에 발생한 어떠한 변경사항이든 HttpSession에 복사할 수 있음
+- 3) ConcurrentSessionFilter : it uses the SecurityContextHolder functionality and needs to update the SessionRegistry to reflect ongoing requests from the principal
+- 4) 인증 처리 메커니즘 : UsernamePasswordAuthenticationFilter, CasAuthenticationFilter, BasicAuthenticationFilter .. 
+- 5) SecurityContextHolderAwardRequestFilter
+- 6) JaasApiIntegrationFilter
+- 7) RememberMeAuthenticationFilter
+- 8) AnonymousAuthenticationFilter
+- 9) ExceptionTranslationFilter : 보호된 요청을 처리하는 동안 발생할 수 있는 예외의 기본 라우팅과 위임을 처리
+     AuthenticationEntryPoint - 인증되지 않은 사용자가 보호된 HTTP 리소스를 요청하는 경우 호출
+     AccessDeniedHandler - 사용자가 인증은 되어있으나 해당 리소스에 권한이 없는 경우 호출
+- 10) FilterSecurityInterceptor : 권한 부여와 관련된 결정을 AccessDecisionManager에게 위임해 권한 부여 결정 및 접근 제어 결정을 쉽게 만듦
