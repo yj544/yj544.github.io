@@ -12,6 +12,43 @@ toc_icon: "cog"
 toc_sticky: true
 ---
 
+### Garbage Collector
+Java는 개발자가 직접 메모리를 해제하지 않기 때문에 가비지 컬렉터(Garbage Collector)가 사용하지 않는 객체를 찾아 지우는 작업을 수행한다.   
+
+가비지 컬렉터는 두 가지를 가정한다. (weak generational hypothesis)
+  - 대부분의 객체가 금방 접근 불가능 상태가 된다.
+  - 오래된 객체에서 젊은 객체로의 참조는 거의 없다. 
+
+### Heap Memory
+Heap 메모리는 크게 Young, Old, PermGen(``JDK 8에서는 제외됨``) 세 가지 영역으로 구분된다.
+
+![GC 영역 및 데이터 흐름도](https://d2.naver.com/content/images/2015/06/helloworld-1329-1.png)
+
+- 1) Young
+   - 새롭게 생성된 객체가 위치하는 곳.
+   - 대부분의 객체가 금방 접근 불가능 상태가 되기 때문에 해당 영역에서 생성되었다가 사라진다.
+   - Young 영역에서 객체가 사라지면 Minor GC가 발생한다고 한다.
+   - Eden 영역과 2개의 Survivor 영역(S0, S1)으로 구분된다. 
+
+- 2) Old
+   - Young 영역에서 생성된 이후 접근 불가능 상태가 되지 않은 객체가 복사되는 곳.
+   - Young 영역보다는 크게 할당되어 GC도 적게 발생한다.
+   - Old 영역에서 객체가 사라질 때 Major GC 또는 Full GC가 발생한다고 한다.
+
+- 3) PermGen (Permanent Generation) 
+   - Young 및 Old 공간과는 분리된 Permanent Heap 
+
+#### JVM Memory 
+- 1) ~ JDK 7  
+```
+<----- Java Heap -----> <-PermanentHeap-> <--- Native Memory --->
++------+----+----+-----+----------------+--------+--------------+
+| Eden | S0 | S1 | Old |    Permanent   | C Heap | Thread Stack |
++------+----+----+-----+----------------+--------+--------------+
+```
+
+- JDK 7까지는 Heap이 Young, Old Heap이 포함되는 Java Heap 영역과 PermGen이 포함되는 PermanentHeap 영역으로 구성되었다.  
+- jmap -heap 결과  
 ```
 Heap Configuration:
    MinHeapFreeRatio = 40
@@ -54,6 +91,17 @@ PS Perm Generation
    99.61870817860145% used
 ```
 
+- 2) JDK 8 ~     
+```                   
+<----- Java Heap -----> <-------------- Native Memory --------->
++------+----+----+-----+----------------+--------+--------------+
+| Eden | S0 | S1 | Old |   Metaspace    | C Heap | Thread Stack |
++------+----+----+-----+----------------+--------+--------------+
+```
+
+- PermGen 영역이 사라지고 Metaspace가 추가됨
+- 기존에 PermGen 영역에 저장되던 클래스 메타 정보가 Metaspace에 저장되며 Metaspace는 Native Heap Memory에 위치함 
+- jmap -heap 결과
 ```
 Heap Configuration:
    MinHeapFreeRatio         = 0
@@ -93,50 +141,6 @@ PS Old Generation
    0.0% used
 ```
 
-### Garbage Collector
-Java는 개발자가 직접 메모리를 해제하지 않기 때문에 가비지 컬렉터(Garbage Collector)가 사용하지 않는 객체를 찾아 지우는 작업을 수행한다.   
-
-가비지 컬렉터는 두 가지를 가정한다. (weak generational hypothesis)
-  - 대부분의 객체가 금방 접근 불가능 상태가 된다.
-  - 오래된 객체에서 젊은 객체로의 참조는 거의 없다. 
-
-### Heap Memory
-Heap 메모리는 크게 Young, Old, PermGen(``JDK 8에서는 제외됨``) 세 가지 영역으로 구분된다.
-
-![GC 영역 및 데이터 흐름도](https://d2.naver.com/content/images/2015/06/helloworld-1329-1.png)
-
-- 1) Young
-   - 새롭게 생성된 객체가 위치하는 곳.
-   - 대부분의 객체가 금방 접근 불가능 상태가 되기 때문에 해당 영역에서 생성되었다가 사라진다.
-   - Young 영역에서 객체가 사라지면 Minor GC가 발생한다고 한다.
-   - Eden 영역과 2개의 Survivor 영역(S0, S1)으로 구분된다. 
-
-- 2) Old
-   - Young 영역에서 생성된 이후 접근 불가능 상태가 되지 않은 객체가 복사되는 곳.
-   - Young 영역보다는 크게 할당되어 GC도 적게 발생한다.
-   - Old 영역에서 객체가 사라질 때 Major GC 또는 Full GC가 발생한다고 한다.
-
-- 3) PermGen (Permanent Generation) 
-   - Young 및 Old 공간과는 분리된 Permanent Heap 
-
-#### JVM Memory 
-1) ~ JDK 7  
-```
-<----- Java Heap -----> <-PermanentHeap-> <--- Native Memory --->
-+------+----+----+-----+----------------+--------+--------------+
-| Eden | S0 | S1 | Old |    Permanent   | C Heap | Thread Stack |
-+------+----+----+-----+----------------+--------+--------------+
-```
-
-2) JDK 8 ~     
-```                   
-<----- Java Heap -----> <-------------- Native Memory --------->
-+------+----+----+-----+----------------+--------+--------------+
-| Eden | S0 | S1 | Old |   Metaspace    | C Heap | Thread Stack |
-+------+----+----+-----+----------------+--------+--------------+
-```
-- PermGen 영역이 사라지고 Metaspace가 추가됨
-- 기존에 PermGen 영역에 저장되던 클래스 메타 정보가 Metaspace에 저장되며 Metaspace는 Native Heap Memory에 위치함 
 
 3) PermGen to Metaspace
 - (1) PermGen 에 저장되던 정보들
