@@ -6,11 +6,37 @@ tags:
   - java
 ---
 
-# 1. Class Loader
-Class Loader는 자바 클래스 파일을 컴파일 시점이 아닌 런타임 시점에 JVM에 로드하는 주체이며 JRE에 포함되어 있다.
-자바 코드(.java)를 컴파일하면 JVM에서 실행 가능한 클래스 파일(.class)형태가 되며, JVM이 해당 클래스를 실행하기 위해서는 로딩하는 과정이 필요하다.
+### 1. Class Loader
+- Class Loader는 자바 클래스 파일을 컴파일 시점이 아닌 런타임 시점에 JVM에 로드하는 주체이며 JRE에 포함되어 있다.
+- 자바 코드(.java)를 컴파일하면 JVM에서 실행 가능한 클래스 파일(.class)형태가 되며, JVM이 해당 클래스를 실행하기 위해서는 로딩하는 과정이 필요하다.
+- ClassLoader가 클래스를 로드하는 과정은 크게 로딩, 링킹, 초기화 세 가지로 구분할 수 있다.
 
-# 2. java.lang.ClassLoader (rt.jar) 
+#### 로딩 (Loading)
+- ClassLoader가 특정 이름을 가진 .class 파일을 읽어서 다음과 같은 정보를 Method 영역에 저장한다. 
+  - 대상 클래스 및 부모 클래스 정보
+  - 변수 및 함수 정보
+- .class 파일이 로딩된 이후 Heap 영역에 java.lang.Class 인스턴스를 생성한다. 
+
+#### 링킹 (Linking)
+- 클래스를 가져와서 실행할 수 있도록 JVM의 런타임 상태로 결합시키는 과정
+- 증명(verification), 준비(preparation), 해결(resolution) 세 단계를 수행한다.
+
+- 증명
+  - .class 파일을 검증하기 위해 적절한 포멧인지, java.lang.Object의 하위 클래스가 맞는지 등을 확인한다. 
+
+- 준비 
+  - JVM이 클래스 변수에 대한 메모리를 할당하고 변수 타입에 맞춰 기본 값으로 초기화한다. 
+  - 단, int i = 10 에서 i에 10을 할당하는 실제 변수 초기화 작업은 이뤄지지 않는다.
+
+- 해결 (optional)
+  - Constant Pool의 Symbolic Reference를 Direct Reference(실제 메모리 주소값)으로 변경한다.
+
+#### 초기화 (Initialization)
+- 클래스의 변수를 개발자가 설정한 값으로 초기화한다.
+- 대상 클래스의 super 클래스가 초기화되지 않은 상태라면 해당 클래스의 초기화를 수행한다. 
+- 초기화는 clinit 함수를 호출하여 수행한다. 
+
+### 2. java.lang.ClassLoader (rt.jar) 
     자바에서 제공되는 모든 클래스 로더는 ClassLoader라는 추상 클래스를 통해 (또는 상속받아) 표현된다.
     모든 클래스는 getClassLoader라는 함수를 가지며, 이는 해당 클래스를 로드하는 클래스 로더를 참조한다.
 
@@ -162,6 +188,3 @@ Class Loader는 자바 클래스 파일을 컴파일 시점이 아닌 런타임 
 웹의 경우 ServletContextClassLoader, ServletContainerClassLoader 최소 두 개의 클래스 로더가 추가로 존재한다.
 ServletContextClassLoader의 경우 웹 애플리케이션 자체 API를 제공하기 위해 컨테이너를 로드하는 역할을 하는 클래스 로더이다.
 ServletContainerClassLoader는 사용자가 추가한 JSP나 WAR 파일을 로드하기 위한 클래스 로더이며 WEB-INF/classes 파위 파일을 먼저 탐색하고 이후 WEB-INF/libs에 있는 jar 파일을 탐색한다. 
-
-https://www.baeldung.com/java-classloaders
-https://engkimbs.tistory.com/606
