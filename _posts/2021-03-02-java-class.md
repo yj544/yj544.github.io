@@ -265,17 +265,21 @@ public class Parent {
 - 여기서 dynamic method dispatch는 다형성을 허용하는 개념이다.
 - 대부분의 언어는 Virtual Method Table를 사용하여 dynamic dispatch를 구현한다.
 - Virtual Method Table에는 각 클래스에서 호출되어야 하는 실제 함수의 주소가 매핑되어 있다.
-- 객체가 생성되는 시점에 해당 객체가 참조할 Virtual Method Table을 찾아 객체의 메모리에 저장하는데, 이를 Virtual Table Pointer 또는 VPTR이라고 한다. 
-
+- 객체가 생성되는 시점에 해당 객체가 참조할 Virtual Method Table의 주소를 객체의 메모리에 저장하는데, 이를 Virtual Table Pointer 또는 VPTR이라고 한다. 
 ```java
-
 public class Base {
+	void init() {
+		//...
+	}
 	void doSomething() {
 		System.out.println("base..");
 	}
 }
 
 public class Derived extends Base{
+	void initDerived() {
+		//...
+	}
 	void doSomething() {
 		System.out.println("derived..");
 	}
@@ -292,3 +296,162 @@ public static void main(String[] args) {
 	b.doSomething(); //derived..
 }
 ```
+- 위와 같이 부모 클래스인 Base, 자식 클래스인 Derived가 있을 때, main이 수행되는 시점의 메모리를 그려보면 다음과 같을 것이다.
+![/image/vtable.png]
+	- 각 클래스 별로 실제 호출되어야 하는 대상 함수 주소가 정리된 vtable이 있다.
+	- 객체가 생성되는 시점에 해당 객체가 참조해야 하는 vtable의 주소를 객체 메모리에 가진다.
+	- 따라서 객체를 담는 참조변수가 달라져도 해당 객체에서 실제로 호출해야 하는 대상은 변하지 않는다. 
+
+### Double Dynamic Method Dispatch
+- 말 그대로 두 번의 Dynamic Method Dispatch가 발생하는 것을 말한다.
+- Doublt Dispatch를 이용한 대표적인 패턴에는 Visitor Pattern이 있다.
+
+### Visitor Pattern
+- 객체의 구조와 기능을 분리시키는 패턴
+- 구조는 거의 변하지 않으나 기능이 자주 추가되거나 확장되어야 하는 경우 사용되는 패턴
+- 개방-폐쇄 원칙을 적용하는 방법 중 하나
+	- 소프트웨어 개체(클래스, 모듈, 함수 등등)는 확장에 대해 열려 있어야 하고, 수정에 대해서는 닫혀 있어야 한다'는 프로그래밍 원칙
+- 예시 
+	```java
+	// 1. 대상에 대한 인터페이스를 만듦
+	public interface ComputerPart {
+		public void accept(ComputerPartVisitor computerPartVisitor);
+	}
+
+	//2. 대상 인터페이스를 구현한 클래스를 만듦
+	public class Keyboard implements ComputerPart {
+		@Override
+		public void accept(ComputerPartVisitor computerPartVisitor) {
+			computerPartVisitor.visit(this);
+		}
+	}
+	public class Monitor implements ComputerPart {
+		@Override
+		public void accept(ComputerPartVisitor computerPartVisitor) {
+			computerPartVisitor.visit(this);
+		}
+	}
+	public class Mouse implements ComputerPart {
+		@Override
+		public void accept(ComputerPartVisitor computerPartVisitor) {
+			computerPartVisitor.visit(this); //여기서 또 한 번 dynamic dispatch가 발생한다. => ComputerPartVisitor의 구현체 중 어떤 구현체의 visit을 호출할 지
+		}
+	}
+	public class Computer implements ComputerPart {
+		ComputerPart[] parts;
+		public Computer(){
+			parts = new ComputerPart[] {new Mouse(), new Keyboard(), new Monitor()};		
+		} 
+		@Override
+		public void accept(ComputerPartVisitor computerPartVisitor) {
+			for (int i = 0; i < parts.length; i++) {
+				parts[i].accept(computerPartVisitor); //여기에서 한 번 dynamic dispatch가 발생한다. => ComputerPart의 구현체 중 어떤 구현체의 accept를 호출할 지
+			}
+			computerPartVisitor.visit(this);
+		}
+	}
+
+	//3. visitor 인터페이스를 만듦
+	public interface ComputerPartVisitor {
+		public void visit(Computer computer);
+		public void visit(Mouse mouse);
+		public void visit(Keyboard keyboard);
+		public void visit(Monitor monitor);
+	}
+
+	//4. visitor 인터페이스를 구현한 클래스를 만듦
+	public class ComputerPartDisplayVisitor implements ComputerPartVisitor {
+
+		@Override
+		public void visit(Computer computer) {
+			System.out.println("Displaying Computer.");
+		}
+
+		@Override
+		public void visit(Mouse mouse) {
+			System.out.println("Displaying Mouse.");
+		}
+
+		@Override
+		public void visit(Keyboard keyboard) {
+			System.out.println("Displaying Keyboard.");
+		}
+
+		@Override
+		public void visit(Monitor monitor) {
+			System.out.println("Displaying Monitor.");
+		}
+	}
+
+	//5. 추가 기능을 구현해야 하는 경우 ComputerPartDisplayVisitor와 마찬가지로 ComputerPartVisitor 를 구현하면 됨
+	public class ComputerPartUseVisitor implements ComputerPartVisitor {
+
+		@Override
+		public void visit(Computer computer) {
+			System.out.println("Now Computer is being used..");
+		}
+
+		@Override
+		public void visit(Mouse mouse) {
+			System.out.println("Now Mouse is being used..");
+		}
+
+		@Override
+		public void visit(Keyboard keyboard) {
+			System.out.println("Now Keyboard is being used..");
+		}
+
+		@Override
+		public void visit(Monitor monitor) {
+			System.out.println("Now Monitor is being used..");
+		}
+	}	
+	```
+
+- 클래스 안에 동작을 포함하는 일반적인 구성과의 비교 
+	```java
+	//1. 인터페이스 추가 
+	public interface ComputerPart {
+		@Override
+		public void display();
+	}
+
+	//2. 각 클래스 구현 
+	public class Computer implements ComputerPart {
+		ComputerPart[] parts;
+		public Computer(){
+			parts = new ComputerPart[] {new Mouse(), new Keyboard(), new Monitor()};		
+		} 
+		@Override
+		public void display() {
+			for (int i = 0; i < parts.length; i++) {
+				parts[i].display();
+			}
+			System.out.println("Displaying Computer.");
+		}
+	}
+
+	public class Mouse implements ComputerPart {
+		@Override
+		public void display() {
+			System.out.println("Displaying Mouse.");
+		}
+	}
+
+	public class Keyboard implements ComputerPart {
+		@Override
+		public void display() {
+			System.out.println("Displaying Keyboard.");
+		}
+	}
+
+	public class Monitor implements ComputerPart {
+		@Override
+		public void display() {
+			System.out.println("Displaying Monitor.");
+		}
+	}
+	```
+	- 여기에 기능을 추가하려는 경우 ComputerPart 인터페이스에 함수 선언을 추가하고 각 클래스에 추가할 함수를 구현하면 된다.
+	- 단, 이 경우 인터페이스를 구현하는 모든 클래스는 추가된 함수를 모두 구현해야 한다.
+	- 또한 각 클래스는 파일이 분리되어 있어 수정 범위도 넓어진다. 
