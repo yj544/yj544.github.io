@@ -537,7 +537,9 @@ jstack [ option ] [server-id@]remote-hostname-or-IP
    - 2) Service Provider Interface : Service의 인터페이스 또는 추상 클래스이다. Service가 인터페이스라면 동시에 SPI도 될 수 있다.
    - 3) Service Provider
       - SPI의 구현체로 Service를 구현하거나 확장하는 하나 이상의 클래스를 포함한다.
-      - META-INF/services 경로의 Provider 설정 파일이 있는데, 해당 파일의 이름과 내용의 포멧은 정해져 있는 것 같다. 
+      - META-INF/services 경로의 Provider 설정 파일이 있는데, 파일명과 내용에 대한 형식은 정해져있다. ([참고](https://docs.oracle.com/javase/7/docs/api/java/util/ServiceLoader.html))
+         - 파일명 : FQCN(Full Qualified Class Name) (인터페이스)
+         - 내용 : FQCN(Full Qualified Class Name) (실제 구현체)
       - tools.jar의 Service Provider를 확인해보면 아래와 같다. 
          - ![tools.jar > spi](/image/spi.PNG)
          - 그리고 위 코드에서 쓰는 ``ServiceLoader.load(AttachProvider.class...)``에 관한 설정은 아마도 ``com.sun.tools.attach.spi.AttachProvider`` 인 것 같다.

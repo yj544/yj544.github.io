@@ -10,6 +10,43 @@ toc_icon: "cog"
 toc_sticky: true
 ---
 
+### POJO
+- POJO(란 )Plain Old Java Object)는 말 그대로 간단한 자바 오브젝트로, 마틴 파울러가 2000년에 컨퍼런스를 준비하며 만들어낸 용어이다. 
+- EJB와 같은 복잡하고 제한이 많은 기술을 사용하는 것보다 자바의 단순한 오브젝트를 이용하는 것이 이점이 있다고 생각했으며, 이 단순한 오브젝트에 이름을 붙인 것이 POJO이다.
+	```
+	In the talk we were pointing out the many benefits of encoding business logic into regular java objects rather than using Entity Beans. 
+	We wondered why people were so against using regular objects in their systems and concluded that it was because simple objects lacked a fancy name. 
+	So we gave them one, and it's caught on very nicely.
+	```
+- POJO의 세 가지 규칙
+    - 미리 지정된 클래스를 extends 하는 것
+      - ex) public class Foo extends javax.servlet.http.HttpServlet { //... }
+    - 미리 지정된 인터페이스를 implements 하는 것
+      - ex) public class Bar implements javax.ejb.EntityBean { //... }
+    - 미리 정의된 Annotation을 포함하는 것
+      - ex) @javax.persistence.Entity public class Baz { //... }
+      - POJO 기반의 프레임워크들은 기술적인 이슈로 Annotation을 사용하고 있다.
+
+- Spring은 POJO 프로그래밍을 지원하는 프레임워크이다. 
+- Spring은 POJO를 지원하기 위해 Ioc/DI, AOP, PSA 기술을 사용하며, 여기에 설계 정보를 더해 POJO가 어떻게 관계를 맺고 동작하는지를 판단한다. 
+
+#### EJB
+- EJB는 Enterprise Java Bean의 줄임말로 엔터프라이즈 시스템을 구현하기 위한 서버 사이드 컴포넌트 모델이다.
+- 특징
+	- 인스턴스 풀링 : 객체를 미리 생성하고 메모리에 올려두어 서비스의 안정성을 지원
+	- 트랜잭션 처리 : 컨테이너에서 자동으로 모든 함수에 대한 트랜젝션 처리를 하며 이로 인한 안정적인 데이터 처리가 가능
+	- 퍼시스턴스 관리 : JavaBeans의 상태를 메모리에서 자동으로 관리
+- 종류
+	- Session Bean : 클라이언트에 의해 호출될 수 있는 비즈니스 로직을 포함하며, Stateful Session Bean 및 Stateless Session Bean 두 가지 유형이 있다.
+	- Message Driven Bean : 특정 메시지에 대한 리스너 역할을 한다. 
+	- Entity Bean : JPA(Java Persistence API)로 대체되어 현재는 사용하지 않음
+- JavaBeans : Java로 작성된 컴포넌트를 말하며 아래의 조건을 만족해야 한다.
+	- 클래스는 직렬화 되어야 함
+	- 기본 생성자를 가지고 있어야 함
+	- 멤버변수에 get,set 혹은 표준 명명법을 따르는 함수를 통해 접근할 수 있어야 함
+	- 필요한 이벤트를 처리하는 메서드를 포함해야 함
+- 다만 복잡한 아키텍쳐, 낮은 생산성과 느린 성능, 불필요한 기술 복잡도 등의 문제가 있었으며 이는 POJO가 나오게 된 배경이 된다.
+
 ### Inversion of Control (제어의 역전)
 Inversion of Control은 Dependency Injection이라고도 하며, 의존 관계를 직접 만드는 게 아니라 프레임워크로부터 주입을 받아 사용하는 방법을 말한다. 
 프레임워크를 사용할 때 프레임워크가 제공하는 함수를 사용하는 것이 일반적이지만, 반대의 상황이 되면서 "제어가 역전되었다" 라고 표현하는 것이다.    
@@ -172,4 +209,3 @@ Field managerRepository in com.demo.test.MemberController required a bean of typ
 다만 생성자를 통한 의존성 주입 시 순환 참조가 발생할 수 있음을 알아야 한다.
 Bean으로 등록되는 두 클래스 A,B가 있는데, A는 B를 B는 A를 사용한다면 순환 참조가 발생함에 따라 어플리케이션이 구동되지 않는다.
 이런 상황이 발생하지 않도록 수정하거나, 반드시 그래야 한다면 Setter 또는 변수를 통한 의존성 주입을 받도록 해야한다.
-
