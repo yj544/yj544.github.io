@@ -128,7 +128,7 @@ public class Parent {
 ```
 
 ### inner class / nested class
-- 클래스 안에서 다른 클래스를 정의할 때 static으로 선언하는 경우 ``static nested class``, non-static인 경우 ``inner class``라고 한다.
+- 내부 클래스는 클래스 안에 선언되는 클래스를 말하며 static으로 선언하는 경우 ``static nested class``, non-static인 경우 ``inner class``라고 한다.
 	```java
 	class OuterClass {
 		static class StaticNestedClass {
@@ -140,7 +140,6 @@ public class Parent {
 	}
 	```
 - {OuterClassName}${InnerClassName}.class 의 형식으로 클래스 파일이 만들어진다.
-
    ```java
    public class Parent {
       public class ParentInnerClass extends Parent{
@@ -151,72 +150,129 @@ public class Parent {
 	- Parent$ParentInnerClass$ParentInnerInnerClass.class
 	- Parent$ParentInnerClass.class
 	- Parent.class
-- 
-	```java
-	public class OuterClass {
-		
-		private String name;
-		public int count;
-		
+
+```java
+public class OuterClass {
+	
+	private String name;
+	public int count;
+	
+	private void init() {
+		// OuterClass에서 InnerClass의 멤버변수에 접근할 수 없다.
+		// num = 20; 
+		InnerClass i = new InnerClass();
+		i.num = 20;
+	}
+	
+	static class StaticNestedClass {
 		private void init() {
-			// num = 20; // OuterClass에서 InnerClass의 멤버변수에 접근할 수 없다.
-			InnerClass i = new InnerClass();
-			i.num = 20;
-		}
-		
-		static class StaticNestedClass {
-			private void init() {
-				// static nested class에서는 OuterClass의 멤버변수에 접근할 수 없다. 
-				// name = "test"; //Cannot make a static reference to the non-static field name
-			}
-		}
-		class InnerClass {
-			// InnerClass에서는 static 변수를 선언할 수 없다. 
-			// private static String name; //The field name cannot be declared static in a non-static inner type, unless initialized with a constant expression
-			public int num;
-			
-			private void init() {
-				// InnerClass는 OuterClass의 멤버변수에 접근제한자에 제한없이 접근할 수 있다 
-				name = "test";
-				count = 10;
-			}
-		}
-
-		// LocalClass : 블럭 안에 정의되는 LocalClass는 지역변수와 마찬가지로 블럭이 끝나면 소멸된다. 
-		public void testLocalClass(String s1, String s2) {
-			class LocalClass {
-				String s1;
-				String s2;
-				
-				public LocalClass(String s1, String s2) {
-					this.s1 = s1;
-					this.s2 = s2;
-				}
-			}
-			LocalClass lc = new LocalClass(s1, s2);
-		}	
-
-		// AnonymousClass : LocalClass와 유사, 익명 클래스로 단 하나의 객체만 생성하는 일회용 클래스이다. 	
-		interface AnonymousClass {
-			public void getName(String name);
-		}
-		
-		public void testAnonymousClass() {
-			AnonymousClass ac = new AnonymousClass() {
-				String someone = "";
-				@Override
-				public void getName(String name) {
-					this.someone = name;
-					System.out.println(this.someone);
-				}
-			}; 
+			// static nested class에서는 OuterClass의 멤버변수에 접근할 수 없다. 
+			//Cannot make a static reference to the non-static field name
+			// name = "test"; 
 		}
 	}
-	```
-- InnerClass를 사용하는 이유
+	class InnerClass {
+		// InnerClass에서는 static 변수를 선언할 수 없다. 
+		//The field name cannot be declared static in a non-static inner type, unless initialized with a constant expression
+		// private static String name;
+		public int num;
+		
+		private void init() {
+			// InnerClass는 OuterClass의 멤버변수에 접근제한자에 제한없이 접근할 수 있다 
+			name = "test";
+			count = 10;
+		}
+	}
+}
+```
+- 내부 클래스를 사용하는 이유
 	- 논리적인 그룹화 : 특정 클래스에서만 사용되는 클래스를 논리적으로 그룹화하여 패키지를 간소화시킬 수 있다.
 	- 캡슐화 : A 클래스의 private 멤버변수에 접근해야 하는 B 클래스가 있다고 가정했을 때 A의 InnerClass로 B를 만들면 A 클래스의 멤버변수를 public 또는 protected 등으로 변경하지 않고서도 사용할 수 있다.
 	- 읽기 쉽고 관리하기 쉬운 코드 작성이 가능함
+- 내부 클래스 중에서도 함수 안에 선언되는 클래스는 로컬 클래스라고 하며, 함수 안에서 이름을 지정하지 않고 선언하는 클래스를 익명 클래스라고 한다.
+
+#### [local class](https://docs.oracle.com/javase/tutorial/java/javaOO/localclasses.html)
+- 함수에 정의되는 클래스로 지역 변수와 마찬가지로 블럭이 끝나면 소멸된다.
+- 로컬 클래스는 주변 블록의 로컬 변수나 파라미터에 접근할 때 해당 값을 캡쳐한다.
+	- 로컬 클래스가 포함된 외부 클래스의 멤버 변수 및 상수에 접근 가능하다.
+	- 단 선언된 함수의 final 변수에만 접근할 수 있으며 일반 로컬 변수에는 접근할 수 없다. 
+	- 함수 로컬 변수 중 상수로 취급될 수 있는 변수도 접근할 수 있다.
+- 로컬 클래스 안에서는 static 선언을 할 수 없다. 
+	- 외부 클래스의 멤버 변수에 접근 가능한 것 부터 이미 로컬 클래스가 non-static이라는 특징을 보여준다.
+	- 따라서 인터페이스, static 변수, static 함수 등을 선언할 수 없다.
+	- 단 상수에는 static 선언이 가능하다. 
+```java
+public class LocalClassExample {
+	int memberInt = 20;
+	
+	public void testLocalClass(String s1, String s2) {
+		final int finalInt = 10;
+		int localInt = 20;
+		
+		//testLocalClass 함수 내에서만 사용할 수 있는 로컬 내부 클래스
+		class LocalInnerClass {
+			String s;
+			static final String staticFinalString = "";
+
+			//static 변수를 선언할 수 없다.
+			//The field localStaticInt cannot be declared static in a non-static inner type, unless initialized with a constant expression
+			//static int localStaticInt = 0;
+			
+			//인터페이스를 선언할 수 없다.
+			//The member interface testInterface can only be defined inside a top-level class or interface or in a static context
+			//interface testInterface {
+			//	public void func();
+			//}
+
+			public LocalInnerClass(String s) {
+				//외부 클래스 멤버 변수 접근
+				memberInt = 3;
+				
+				//함수 로컬 변수가 final인 경우 접근 가능
+				if(s.length() == finalInt) {
+					this.s = s;
+				}
+				
+				//Java SE8 부터는 final로 선언되지 않았지만 final처럼 취급될 수 있는, 즉 초기화 후 값이 변경되지 않은 변수에 대해서는 접근 가능
+				if(s.length() == localInt) {
+					this.s = s;
+				}
+				
+				//단 final로 취급되어야 하기 때문에 변경 시에는 컴파일 오류
+				//Local variable localInt defined in an enclosing scope must be final or effectively final
+				//localInt = 30;
+				
+				//Java SE8 부터는 함수 안에 local class를 선언한 경우 함수의 파라미터에 접근할 수 있다.
+				if(s1.equals(s2)) {
+				}
+			}
+		}
+		//로컬 내부 클래스의 객체 생성은 해당 클래스가 선언된 함수에서만 가능
+		LocalInnerClass lc = new LocalInnerClass(s1);
+	}
+}
+```
+### [anonymous class](https://docs.oracle.com/javase/tutorial/java/javaOO/anonymousclasses.html)
+- 익명 클래스는 함수 내에서 구현된다는 점에서 로컬 클래스와 유사하다.
+- 클래스 선언은 다른 곳에 있고, 구현체만 함수 안에 존재한다. 
+```java
+
+	interface AnonymousClass {
+		public void getName(String name);
+	}
+	
+	public void testAnonymousClass() {
+		// 익명 클래스 구현 및 객체 생성
+		AnonymousClass ac = new AnonymousClass() {
+			String someone = "";
+			@Override
+			public void getName(String name) {
+				this.someone = name;
+				System.out.println(this.someone);
+			}
+		}; 
+	}
+```
 
 ### abstract class / final class
 - 클래스의 객체 생성을 막으려는 경우 abstract를 사용한다.
