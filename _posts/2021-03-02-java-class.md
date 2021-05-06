@@ -255,6 +255,7 @@ public class LocalClassExample {
 ### [anonymous class](https://docs.oracle.com/javase/tutorial/java/javaOO/anonymousclasses.html)
 - 익명 클래스는 함수 내에서 구현된다는 점에서 로컬 클래스와 유사하다.
 - 클래스 선언은 다른 곳에 있고, 구현체만 함수 안에 존재한다. 
+- 클래스 이름이 없기 때문에 {OuterClassName}${숫자}.class 형태로 컴파일된다.
 ```java
 
 	interface AnonymousClass {
