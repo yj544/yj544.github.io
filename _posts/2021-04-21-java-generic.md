@@ -136,26 +136,26 @@ toc_sticky: true
 - TargetType
   - 컴파일러는 TargetType을 Generic Method 호출 시 타입 추론을 할 때 사용한다. 
   ```java
-  public static final <T> List<T> emptyList() {
-    return (List<T>) EMPTY_LIST;
-  }
+    public static final <T> List<T> emptyList() {
+      return (List<T>) EMPTY_LIST;
+    }
 
-  //TargetType이 List<String>이 되며 emptyList의 type argument는 String으로 추론됨
-  //List<String> listOne = Collections.<String>emptyList();
-  List<String> listOne = Collections.emptyList();
+    //TargetType이 List<String>이 되며 emptyList의 type argument는 String으로 추론됨
+    //List<String> listOne = Collections.<String>emptyList();
+    List<String> listOne = Collections.emptyList();
   ```
   - Java SE 7 이후로는 TargetType의 범위가 확장되었다.
   ```java
-	 static void processStringList(List<String> stringList) {
+	  static void processStringList(List<String> stringList) {
 	    // process stringList
-	}
+	  }
 
-  //Java SE 7 Error : The method processStringList(List<String>) is not applicable for the arguments (List<Object>)
-  //emptyList의 T가 추론될 수 있는 TargetType이 없어서 Object로 생성됨
-  processStringList(Collections.emptyList());
+    //Java SE 7 Error : The method processStringList(List<String>) is not applicable for the arguments (List<Object>)
+    //emptyList의 T가 추론될 수 있는 TargetType이 없어서 Object로 생성됨
+    processStringList(Collections.emptyList());
   
-  //TargetType이 함수 인자까지 확장되어 T는 String으로 추론됨
-  processStringList(Collections.<String>emptyList());
+    //TargetType이 함수 인자까지 확장되어 T는 String으로 추론됨
+    processStringList(Collections.<String>emptyList());
   ```
 
 #### Bound Type Parameter
