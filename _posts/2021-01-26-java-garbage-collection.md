@@ -155,15 +155,15 @@ Young 영역에서 GC를 실행할 때는 카드 테이블만 확인해서 GC �
 
 ### [GC Process](https://www.oracle.com/webfolder/technetwork/tutorials/obe/java/gc01/index.html)
 - 1) Eden 영역에 새로 생성된 대부분의 객체가 할당된다.
-   ![Object Allocation](/image/1-object-allocation.png)
+   - ![Object Allocation](/image/1-object-allocation.png)
 - 2) Eden 영역이 가득차면 Minor GC가 발생한다. 
-   ![Filling The Eden Space](/image/2-filling-the-eden-space.png)
+   - ![Filling The Eden Space](/image/2-filling-the-eden-space.png)
 - 3) 살아남은 객체(Referenced Object)는 S0으로 옮겨지며 Eden 영역은 비워진다.
-   ![Copying Referenced Objects](/image/3-copying-referenced-objets.png)
+   - ![Copying Referenced Objects](/image/3-copying-referenced-objects.png)
 - 4) Eden 영역이 다시 가득차면 Minor GC가 발생하면서 살아남은 객체는 S1으로 옮겨지고 Eden 영역은 비워진다. 이 때 S0에 있던 객체들이 S1으로 옮겨지고 age 값이 증가한다.
-   ![Object Aging](/image/4-object-aging.png)
+   - ![Object Aging](/image/4-object-aging.png)
 - 5) 위 과정을 반복하다가 살아남은 객체의 age 값이 임계값을 넘어가면 (예시에서는 8) 해당 객체는 Old 영역으로 이동한다.
-   ![Promotion](/image/5-promotion.png)
+   - ![Promotion](/image/5-promotion.png)
 
 ### Old 영역에서 GC
 Old 영역은 기본적으로 데이터가 가득차면 GC를 수행하는데 동작 방식은 GC 방식에 따라 다르다. 
