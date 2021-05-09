@@ -103,7 +103,7 @@ public interface AuthenticationProvider {
 }
 ```
 
-![AuthenticationManager와 ProviderMaanger의 구성](https://github.com/spring-guides/top-spring-security-architecture/raw/master/images/authentication.png)
+![AuthenticationManager와 ProviderManager의 구성](https://raw.githubusercontent.com/spring-guides/top-spring-security-architecture/main/images/authentication.png)
 
 
 #### AuthenticationManagerBuilder

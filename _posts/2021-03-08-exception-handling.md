@@ -20,7 +20,7 @@ toc_sticky: true
 	- 시스템 구동에 영향을 주는 치명적인 오류로 코드 레벨에서 대응이 불가능하다.
 
 ### Java Exception classes
-- ![/image/java-exception-classes-hierarchy.png]
+- ![Exception Hierarchy](/image/java-exception-classes-hierarchy.png)
 - Java에서 Exception 클래스는 계층 구조로 구성되어 있다.
 - java.lang.Throwable 클래스가 최상위 클래스이며 크게 Exception 클래스와 Error 클래스로 나뉜다. 
 
