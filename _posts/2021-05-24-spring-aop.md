@@ -10,7 +10,7 @@ toc_sticky: true
 ---
 
 ### [Spring AOP](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#aop)
-#### AOP(Aspect Oriented Programming)
+### AOP(Aspect Oriented Programming)
 - AOP는 관점 지향 프로그래밍이라고 하며 OOP와는 다른 관점(Aspect)로 접근한다. 즉, OOP에서 모듈화의 핵심은 클래스라고 하면 AOP에서는 관점(Aspect)이다.
 - 따라서 OOP에서 모듈화를 통해 발생하는 문제를 AOP의 Aspect를 통해 해결할 수 있다고 한다.
 - OOP에서 모듈화를 통해 발생하는 문제를 AOP의 Aspect를 통해 해결할 수 있다고 한다.
@@ -21,7 +21,7 @@ toc_sticky: true
   - AOP는 이 부분에 중점을 두며 메인 기능 관점이 아닌 부가 기능 관점에서 여러 클래스가 공통적으로 필요한 작업들을 분리하여 재사용하는 것을 목표로 한다.
   - 여기서 여러 클래스에 걸쳐 공통적으로 필요한 작업(ex. 로깅, 트랜잭션, 보안)을 Crosscutting Concerns 라고 부르기도 한다. 
 
-#### AOP 주요 용어 
+### AOP 주요 용어 
 - ``Aspect``
   - 여러 곳에서 공통으로 쓰이는 부가 기능을 의미한다. Spring AOP에서 Aspect는 @Aspect Annotation으로 지원된다.
 
@@ -46,25 +46,37 @@ toc_sticky: true
 - ``Introduction``
     - 대상 클래스에 코드 변경 없이 새로운 함수나 필드를 추가하는 기능을 말한다. 예를 들어 Bean에 IsModified 인터페이스를 구현하여 캐싱을 쉽게 처리할 수 있다.
 - ``Target object``
-    Aspect가 적용될 대상 객체로 Advised object라고 불리기도 한다. Spring AOP는 런타임 프록시로 구현되었기 때문에 Target object 또한 프록시된 객체이다.
+    - Aspect가 적용될 대상 객체로 Advised object라고 불리기도 한다. Spring AOP는 런타임 프록시로 구현되었기 때문에 Target object 또한 프록시된 객체이다.
 - ``AOP proxy``
-    Aspect를 지원하기 위해 AOP 프레임워크에 의해 생성된 객체. Spring 프레임워크에서 AOP proxy는 JDK dynamic proxy 또는 CGLIB proxy이다. 
+    - Aspect를 지원하기 위해 AOP 프레임워크에 의해 생성된 객체. Spring 프레임워크에서 AOP proxy는 JDK dynamic proxy 또는 CGLib proxy이다. 
 - ``Weaving``
-    Aspect를 다른 애플리케이션 타입이나 객체에 연결시켜서 Advised object를 만드는 것.
-    Weaving은 컴파일 시점, 로드 시점, 런타임에 수행할 수 있는데 Spring AOP는 다른 순수 Java AOP 프레임워크와 같이 런타임 시점에 Weaving을 수행한다. 
+    - Aspect를 다른 애플리케이션 타입이나 객체에 연결시켜서 Advised object를 만드는 것.
+    - Weaving은 컴파일 시점, 로드 시점, 런타임에 수행할 수 있는데 Spring AOP는 런타임 시점에 Weaving을 수행한다. 
 
-#### Spring AOP
+### AOP Proxy
+- CGLib의 경우 리패키징하여 spring-core 라이브러리 안에 포함된 형태임
+- Spring AOP는 프록시 클래스가 하나 이상의 인터페이스를 구현한 경우 JDK dynamic proxy를 사용하고 그 외의 경우 CGLib 프록시를 사용함
+- 프록시 될 대상 객체가 어떤 인터페이스도 구현하지 않은 경우 CGLib 프록시가 사용됨 
+- 인터페이스를 구현한 경우에도 CGLib를 사용할 수 있지만 다음을 고려해야함
+  - CGLib를 사용하면 런타임에 생성되는 하위 클래스에서 재정의할 수 없기 때문에 final 함수를 권장하지 않는다.
+  - CGLib 프록시 인스턴스는 Objenesis를 통해 생성되므로 Spring 4.0을 기준으로 프록시 객체 생성자는 더이상 호출되지 않는다. 
+  - JVM이 생성자 bypassing을 허용하지 않는 경우에만 두 번의 생성자가 호출될 수 있음
+
+### Spring AOP
 - IoC Container와 함께 사용되어 Aspect는 일반적인 Bean이 정의되는 방식으로 설정된다.  
 - bean으로 등록된 대상의 함수 호출에 대한 JoinPoint만 지원한다. 
 - 다른 AOP Framework의 목적이 완벽한 AOP를 제공하는 것이라면, Spring AOP의 목표는 AOP를 Spring IoC와 연동하여 엔터프라이즈 애플리케이션에서 가장 흔하게 발생하는 문제(중복 코드, 프록시 클래스 작성 번거로움, 객체간 결합도 증가)를 해결하는 것이다. 
 - 기본적으로 standard JDK dynamic proxies를 사용한다. 
 - AspectJ에서 쓰는 Annotation @AspectJ 을 동일하게 사용하며 Spring의 AspectJ는 PointCut 파싱 및 매칭에 대해서 AspectJ5 일부 라이브러리를 사용한다. 
 
-#### 적용해보기 
-- 1) dependency 추가 
-  		<dependency>
-	        <groupId>org.springframework.boot</groupId>
-	        <artifactId>spring-boot-starter-aop</artifactId>
-	    </dependency>
-  
+### 적용해보기 
+##### 1) dependency 추가 
+  ``` xml
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-aop</artifactId>
+    </dependency>
+  ```
+##### 2) Annotation 추가
+  ```
   
