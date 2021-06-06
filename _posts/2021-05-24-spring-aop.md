@@ -3,7 +3,8 @@ title: "Spring AOP"
 categories:
   - spring
 tags:
-  
+  - springAOP
+  - AOP-proxy
 toc: true
 toc_icon: "cog"
 toc_sticky: true
@@ -78,5 +79,193 @@ toc_sticky: true
     </dependency>
   ```
 ##### 2) Annotation 추가
+  - Spring AOP를 활성화하기 위해서는 ``@EnableAspectJAutoProxy`` 애노테이션을 추가해야 한다.
+  ```java
+  @SpringBootApplication
+  @EnableAspectJAutoProxy
+  public class AopSampleApplication {
+    public static void main(String[] args) {
+      SpringApplication.run(AopSampleApplication.class, args);
+    }
+  }  
   ```
-  
+  - @EnableAspectJAutoProxy 애노테이션은 내부적으로 @Import 애노테이션을 쓰기 때문에 @Configuration 애노테이션과 함께 선언되어야 한다. 
+  ```java
+  @Target(ElementType.TYPE)
+  @Retention(RetentionPolicy.RUNTIME)
+  @Documented
+  @Import(AspectJAutoProxyRegistrar.class)
+  public @interface EnableAspectJAutoProxy {
+    //...
+  }  
+  ```
+  - @SpringBootApplication 도 내부적으로는 @Configuration 이기 때문에 가능하다.
+  ```java
+  @Target(ElementType.TYPE)
+  @Retention(RetentionPolicy.RUNTIME)
+  @Documented
+  @Inherited
+  @SpringBootConfiguration
+  @EnableAutoConfiguration
+  @ComponentScan(excludeFilters = { 
+    @Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class),
+    @Filter(type = FilterType.CUSTOM, classes = AutoConfigurationExcludeFilter.class) })
+  public @interface SpringBootApplication {
+    //...
+  }
+
+  @Target(ElementType.TYPE)
+  @Retention(RetentionPolicy.RUNTIME)
+  @Documented
+  @Configuration
+  @Indexed
+  public @interface SpringBootConfiguration {
+    //...
+  }  
+  ```
+
+##### 3) Aspect 선언
+  - @Aspect 애노테이션을 추가한다.
+  - @Aspect 애노테이션은 Bean으로 자동 등록되는 애노테이션이 아니기 때문에 @Configuration, @Component 등의 애노테이션을 함께 추가해야 한다.
+  ```java
+  @Component
+  @Aspect
+  @Slf4j
+  public class ServiceAspect {
+
+  }
+  ```
+
+  ##### 4) Pointcut 정의
+    - Pointcut을 통해 Advice가 실행되어야 할 JoinPoint를 지정한다.
+    ```java
+    @Component
+    @Aspect
+    @Slf4j
+    public class ServiceAspect {
+      
+      //com.example.aop.target.UserService 클래스에서 호출되는 모든 함수에 대해 Pointcut을 지정
+      @Pointcut("execution(* com.example.aop.target.UserService.*(..))")
+      private void pointcut1() {}
+
+      //com.example.aop.target.service 패키지 및 하위 패키지에 대해 Pointcut을 지정
+      @Pointcut("within(com.example.aop.target.service..*)")
+      private void pointcut2() {}   
+    }
+    ```
+    - Pointcut 정의 
+      - execution : 함수 호출에 매칭시킴
+        - 형식 : execution({접근제어자(생략 가능)} {반환값} {함수명}({파라미터}))
+        ```java
+        @Pointcut("execution(public com.example.aop.target.User com.example.aop.target.UserService.findById(String))")
+
+        //wildcard matches : 첫 번째 *는 모든 리턴 값을 의미, 두 번째 *는 모든 함수를 의미, 세 번째 (..)는 모든 파라미터를 의미 
+        @Pointcut("execution(* com.example.aop.target.UserService.*(..))")
+        ```
+
+      - within : 특정 타입에 매칭시킴
+        ```java
+        //UserService 클래스에서 호출되는 모든 함수
+        @Pointcut("within(com.example.aop.target.UserService)")
+
+        //target 패키지에 속하는 모든 클래스에서 호출되는 모든 함수 
+        @Pointcut("within(com.example.aop.target.*)")
+
+        //target 패키지 및 하위 패키지에 속하는 모든 클래스에서 호출되는 모든 함수
+        @Pointcut("within(com.example.aop.target..*)")
+        ```
+
+      - this / target
+        - this : 객체가 주어진 타입에 대한 객체인 경우 매칭시킴
+        - target : 객체가 주어진 타입에 대한 타겟 객체인 경우의 JoinPoint에 매칭시킴 
+        - this는 CGLib 기반 프록시 생성 시 사용하고, target은 JDK 기반 프록시 생성 시 사용한다. 
+        ```java
+        public class GroupMemberService implements MemberService {
+          //...
+        }
+
+        public class UserService {
+          //...
+        }
+        ```
+        - GroupMemberService가 하나 이상의 인터페이스를 구현하고 있기 때문에 JDK 기반 프록시를 사용한다.
+        - 프록시 된 객체가 Proxy 클래스의 객체가 되고, MemberService 인터페이스를 구현하기 때문에 다음과 같이 Pointcut을 정의할 수 있다.
+          ```java
+          @Pointcut("this(com.example.aop.target.MemberService)")
+          ```
+        - UserService는 어떤 인터페이스도 구현하고 있지 않기 때문에 CGLib 기반 프록시를 사용한다.
+        - 프록시 된 객체는 UserService 또는 하위 클래스가 될 것이기 때문에 다음과 같이 Pointcut을 정의할 수 있다.
+          ```java
+          @Pointcut("this(com.example.aop.target.UserService)")
+          ```
+
+      - args : 주어진 arguments의 형식을 포함하는 함수 호출에 매칭시킴
+        ```java
+        @Pointcut("execution(* *..find*(Long))")
+        @Pointcut("execution(* *..find*(Long,..))")
+        ```
+
+      - @target : 주어진 타입에 대한 애노테이션을 포함하고 있는 클래스에 매칭시킴
+        ```java
+        //@Repository 애노테이션을 가지는 클래스를 포함
+        @Pointcut("@target(org.springframework.stereotype.Repository)")
+        ```
+      - @args : 함수 arguments로 특정 애노테이션이 포함된 타입을 전달받는 경우 매칭시킴     
+      - @within : 주어진 애노테이션 타입 이내의 JoinPoint를 매칭시킴
+        ```java
+        //아래 두 Pointcut은 동일한 의미를 가짐
+        @Pointcut("@within(org.springframework.stereotype.Repository)")
+        @Pointcut("within(@org.springframework.stereotype.Repository *)")
+        ```
+
+      - @annotation : 특정 애노테이션을 포함한 대상에 매칭시킴
+        - @target과 유사해보이는데 @target은 대상 클래스라면 @annotation은 대상(함수가 될 수도 있음)인 게 다른 것 같음
+    - Pointcut 조합
+      - &&, ||, ! 연산자를 통한 Pointcut 조합 가능
+      ```java
+      @Pointcut("@target(org.springframework.stereotype.Repository)")
+      public void repositoryMethods() {}
+
+      @Pointcut("execution(* *..create*(Long,..))")
+      public void firstLongParamMethods() {}
+
+      @Pointcut("repositoryMethods() && firstLongParamMethods()")
+      public void entityCreationMethods() {}
+      ```
+
+##### 5) Advice 정의
+  ```java
+  @Component
+  @Aspect
+  @Slf4j
+  public class ServiceAspect {
+    
+    //com.example.aop.target.UserService 클래스에서 호출되는 모든 함수에 대해 Pointcut을 지정
+    @Pointcut("execution(* com.example.aop.target.UserService.*(..))")
+    private void pointcut1() {}
+
+    //com.example.aop.target.service 패키지 및 하위 패키지에 대해 Pointcut을 지정
+    @Pointcut("within(com.example.aop.target.service..*)")
+    private void pointcut2() {}
+
+    //Before Advice에 대해 pointcut1 Pointcut을 지정
+    @Before("pointcut1()")
+    public void beforeLog(JoinPoint joinPoint) {
+      log.info("start");
+    }
+
+    //After Advice에 대해 pointcut2 Pointcut을 지정
+    //pointcut이 다른 패키지에 위치하는 경우 패키지를 포함한 전체 이름으로 작성
+    @After("com.example.aop.ServiceAspect.pointcut2()")
+    public void afterLog(JoinPoint joinPoint) {
+      log.info("end");
+    }      
+  }
+  ```
+  - Pointcut을 Advice와 함께 정의할 수 있음
+  ```java
+    @After("within(com.example.aop.target.service..*)")
+    public void afterLog(JoinPoint joinPoint) {
+      log.info("end");
+    }  
+  ```
