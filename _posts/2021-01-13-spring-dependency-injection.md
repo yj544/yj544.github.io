@@ -52,9 +52,9 @@ Inversion of Control은 Dependency Injection이라고도 하며, 의존 관계�
 프레임워크를 사용할 때 프레임워크가 제공하는 함수를 사용하는 것이 일반적이지만, 반대의 상황이 되면서 "제어가 역전되었다" 라고 표현하는 것이다.    
 
 ### Spring IoC Container
-Spring IoC Container는 말 그대로 Spring에서 IoC를 지원하는 컨테이너를 말하는데 이중에서도 [BeanFactory](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/BeanFactory.html)는 Spring IoC Container의 최상위 계층에 있는 인터페이스이다.  
+Spring IoC Container는 말 그대로 Spring에서 IoC를 지원하는 컨테이너를 말하는데 이중에서도 [BeanFactory](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/BeanFactory.html)는 Spring IoC Container의 최상위 계층에 있는 인터페이스로 Bean 객체를 생성하고 관리하는 역할을 한다.
 
-또한 이러한 BeanFactory를 상속받아서 BeanFactory가 제공하는 기능을 모두 제공하면서도 그 외 여러 기능을 추가적으로 제공하는 [ApplicationContext](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/ApplicationContext.html)가 있다. 실제로 Spring IoC container라고 표현하는 대상은 ApplicationContext라고 보면 된다.  
+BeanFactory를 상속받아서 BeanFactory가 제공하는 기능을 모두 제공하면서도 그 외 여러 기능을 추가적으로 제공하는 [ApplicationContext](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/ApplicationContext.html)가 있다. 실제로 Spring IoC container라고 표현하는 대상은 ApplicationContext라고 보면 된다.  
 
 ```java
 public interface ApplicationContext extends 
@@ -80,6 +80,99 @@ public interface ApplicationContext extends
 }
 ```
 ApplicationContext에는 몇 가지 구현체가 있는데, 독립형 어플리케이션을 위한 ClassPathXmlApplicationContext, FileSystemXmlApplicationContext 와 웹 어플리케이션을 위한 WebApplicationContext 가 포함된다.  
+
+#### BeanFactory와 ApplicationContext의 비교
+- Lazy Loading vs Eager Loading
+	- BeanFactory는 요청 시 빈을 로드하고 ApplicationContext는 시작 시 모든 빈을 로드함
+		- bean-init.xml
+		```xml
+		<?xml version="1.0" encoding="UTF-8"?>
+		<beans:beans xmlns="http://www.springframework.org/schema/security"
+			xmlns:beans="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:schemaLocation="http://www.springframework.org/schema/beans
+			http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/security
+			http://www.springframework.org/schema/security/spring-security-3.2.xsd
+			http://www.springframework.org/schema/context
+			http://www.springframework.org/schema/context/spring-context.xsd"
+			xmlns:context="http://www.springframework.org/schema/context">
+			<beans:bean id="foo" class="com.demo.test.bean.Foo" init-method="postConstruct"/>
+		</beans:beans>
+		```
+		- Foo.java
+		```java
+		public class Foo {
+			public static boolean isBeanInstantiated = false;
+			
+			public void postConstruct() {
+				isBeanInstantiated = true;
+			}
+			
+			public static boolean isBeanInstantiated() {
+				return isBeanInstantiated;
+			}
+		}
+		```
+		- Test
+		```java
+		@Test
+		public void beanFactory() {
+			Resource res = new ClassPathResource("bean-init.xml");
+			BeanFactory factory = new XmlBeanFactory(res);
+			//여기까지의 코드에선 BeanFactory만 초기화되고 이후에 BeanFactory에 등록된 bean은 getBean 함수가 호출될 때 로드됨
+
+			assertFalse(Foo.isBeanInstantiated());
+			
+			//getBean 함수가 호출되면서 foo bean도 초기화됨
+			Foo foo = (Foo) factory.getBean("foo");
+			
+			assertTrue(foo.isBeanInstantiated());
+		}
+
+		@Test
+		public void applicationContext() {
+			ApplicationContext appContext = new ClassPathXmlApplicationContext("bean-init.xml");
+			//여기까지의 코드에선 ApplicationContext 및 ApplicationCotnext에 등록된 모든 bean이 초기화됨
+			
+			assertTrue(Foo.isBeanInstantiated());
+			
+			Foo foo = (Foo) appContext.getBean("foo");
+			
+			assertTrue(foo.isBeanInstantiated());
+		}
+		```
+
+- Bean Scope
+	- BeanFactory는 ``singleton``과 ``prototype``만 지원하고 ApplicationContext는 모든 scope를 지원함
+- Enterprise Application Features
+	- ApplicationContext에는 messaging, event publication functionality, annotation-based DI 등 엔터프라이즈 애플리케이션을 위한 추가적인 기능이 제공됨
+- Automatic Registration of BeanFactoryPostProcessor, BeanPostProcessor
+	- AppicationContext는 BeanFactoryPostProcessor, BeanPostProcessor를 시작 시점에 자동으로 등록함 
+		- BeanPostProcessor
+			- 빈에 대한 수정을 가할 수 있도록 스프링 빈 생명주기에 대해 제공되는 훅 인터페이스 
+			- 빈이 초기화되기 전과 후에 대한 처리가 가능함
+			```java
+			public interface BeanPostProcessor {
+				@Nullable
+				default Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+					return bean;
+				}
+				
+				@Nullable
+				default Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+					return bean;
+				}
+			}
+			```
+		- BeanFactoryPostProcessor
+			- BeanPostProcessor 인터페이스와 비슷한 기능을 함
+			- 각 빈 생성 시점에 BeanPostProcessor 함수가 호출되는 것과 달리 BeanFactoryPostProcessor는 Ioc Container가 생성되는 시점에 호출됨
+			```java
+			@FunctionalInterface
+			public interface BeanFactoryPostProcessor {
+				void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException;
+			}
+			```
 
 ### Bean
 Spring IoC Container에서 관리하는 객체를 말한다. 
@@ -145,7 +238,6 @@ public class Member implements InitializingBean, DisposableBean{
 
 다만 공식 문서에서는 위와 같은 방법은 불필요하게 코드가 Spring에 결합되기 때문에 @PostConstruct 와 @PreDestroy 어노테이션을 사용할 것을 권하고 있다. 
 ```java
-
 public class Member{
 
 	@PostConstruct
